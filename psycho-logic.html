@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSYCHO-UNITE // SELECTION LOGIC</title>
+<style>
+  :root{
+    --bg:#070b14;
+    --bg-panel:#0c1322;
+    --grid:#13203a;
+    --cyan:#27e6ff;
+    --cyan-dim:#0f8ca3;
+    --magenta:#ff2d7e;
+    --amber:#ffb02e;
+    --green:#2bff9a;
+    --red:#ff4242;
+    --txt:#cfe6f5;
+    --txt-dim:#6a8199;
+    --line:rgba(39,230,255,.18);
+    --mono:"DM Mono","SFMono-Regular",ui-monospace,"Roboto Mono",monospace;
+    --disp:"Rajdhani","Chakra Petch","Eurostile",sans-serif;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font-family:var(--mono);
+    line-height:1.6;
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:42px 42px;
+    background-position:center;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9;
+    background:repeating-linear-gradient(0deg,rgba(7,11,20,0) 0,rgba(7,11,20,0) 2px,rgba(7,11,20,.25) 3px,rgba(7,11,20,0) 4px);
+    mix-blend-mode:multiply;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:22px 18px 60px;position:relative;z-index:1}
+
+  /* ====== NAV ====== */
+  .nav{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;
+    margin-bottom:14px;font-size:11px;letter-spacing:.08em}
+  .nav a{color:var(--cyan);text-decoration:none;border:1px solid var(--line);
+    padding:6px 12px;transition:.18s;display:inline-flex;align-items:center;gap:6px}
+  .nav a:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(39,230,255,.15);background:rgba(39,230,255,.05)}
+  .nav .here{color:var(--txt-dim);letter-spacing:.2em;text-transform:uppercase;font-size:10px}
+
+  /* ====== HEADER ====== */
+  .hd{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(12,19,34,.9),rgba(7,11,20,.6));
+    padding:18px 20px;position:relative;overflow:hidden;
+  }
+  .hd::after{content:"";position:absolute;top:0;right:0;width:160px;height:100%;
+    background:radial-gradient(circle at 90% 20%,rgba(255,45,126,.18),transparent 60%)}
+  .hd-eyebrow{font-size:11px;letter-spacing:.32em;color:var(--cyan);text-transform:uppercase}
+  .hd-title{font-family:var(--disp);font-weight:700;font-size:clamp(24px,5vw,42px);
+    letter-spacing:.06em;line-height:1.02;margin:4px 0 6px;color:#eaf7ff;
+    text-shadow:0 0 18px rgba(39,230,255,.25)}
+  .hd-title .accent{color:var(--magenta);text-shadow:0 0 18px rgba(255,45,126,.4)}
+  .hd-lead{font-size:12px;color:var(--txt-dim);letter-spacing:.04em;margin-top:8px;max-width:680px}
+  .hd-lead b{color:var(--txt)}
+
+  /* ====== SECTION TITLE ====== */
+  .sec{margin-top:34px}
+  .sec-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .sec-h .idx{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--bg);
+    background:var(--cyan);padding:2px 8px;letter-spacing:.1em}
+  .sec-h h2{font-family:var(--disp);font-weight:600;font-size:18px;letter-spacing:.16em;
+    text-transform:uppercase;color:#dff3ff}
+  .sec-h .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+  p.body{font-size:12.5px;color:var(--txt);margin:0 0 12px;line-height:1.7}
+  p.body b{color:#eaf7ff}
+  .em-cyan{color:var(--cyan)}
+  .em-red{color:var(--red)}
+  .em-amber{color:var(--amber)}
+
+  /* ====== DOCTRINE BOX ====== */
+  .doctrine{border:1px solid var(--cyan);background:linear-gradient(180deg,rgba(39,230,255,.06),transparent);
+    padding:16px 18px;position:relative}
+  .doctrine::before{content:"DOCTRINE";position:absolute;top:-9px;left:14px;background:var(--bg);
+    color:var(--cyan);font-size:9px;letter-spacing:.3em;padding:0 8px}
+  .doctrine .big{font-family:var(--disp);font-weight:700;font-size:clamp(16px,3.5vw,22px);
+    color:#eaf7ff;line-height:1.3;margin-bottom:8px}
+  .doctrine .big span{color:var(--magenta)}
+
+  /* ====== AXIS GRID ====== */
+  .axis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ax{border:1px solid var(--line);background:var(--bg-panel);padding:11px 13px;position:relative}
+  .ax .tag{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--bg);background:var(--cyan);
+    padding:1px 7px;letter-spacing:.06em}
+  .ax h3{font-size:12px;color:#dff3ff;margin:7px 0 5px;letter-spacing:.04em}
+  .ax p{font-size:10.5px;color:var(--txt-dim);line-height:1.55}
+
+  /* ====== PICK BLOCK ====== */
+  .pick{border:1px solid var(--line);background:var(--bg-panel);padding:14px 15px;margin-bottom:12px;position:relative}
+  .pick::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;
+    background:linear-gradient(180deg,var(--cyan),var(--magenta))}
+  .pick.key{border-color:var(--cyan);box-shadow:0 0 22px rgba(39,230,255,.1)}
+  .pick-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;margin-bottom:8px}
+  .pick-h .nm{font-family:var(--disp);font-weight:700;font-size:19px;color:#eaf7ff;letter-spacing:.03em}
+  .pick-h .rl{font-size:9px;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase}
+  .pick-h .key-badge{font-size:8px;letter-spacing:.2em;color:var(--bg);background:var(--amber);padding:2px 7px;
+    border-radius:1px;text-transform:uppercase;font-weight:700}
+  .row{display:grid;grid-template-columns:96px 1fr;gap:8px;font-size:11.5px;padding:5px 0;
+    border-top:1px dashed var(--line)}
+  .row:first-of-type{border-top:none}
+  .row .lab{color:var(--cyan-dim);letter-spacing:.06em;font-size:10px;padding-top:2px;text-transform:uppercase}
+  .row .val{color:var(--txt);line-height:1.6}
+  .row .val b{color:#eaf7ff}
+  .row.rival .lab{color:var(--red)}
+  .row.rival .val{color:var(--txt-dim)}
+  .row.rival .val b{color:#ffd9d9}
+
+  /* ====== COMPARE TABLE ====== */
+  .cmp{overflow-x:auto;border:1px solid var(--line);margin:10px 0 4px}
+  table{border-collapse:collapse;width:100%;min-width:480px;font-size:11px}
+  th,td{padding:6px 9px;text-align:left;border-bottom:1px solid rgba(39,230,255,.08);vertical-align:top}
+  thead th{background:rgba(39,230,255,.06);color:var(--cyan);font-weight:500;letter-spacing:.1em;
+    text-transform:uppercase;font-size:9px}
+  td.win{color:var(--green)}
+  td.lose{color:var(--txt-dim)}
+  .mono-sm{font-size:10px;color:var(--txt-dim)}
+
+  /* ====== CUT LIST ====== */
+  .cut{border:1px solid rgba(255,66,66,.32);background:linear-gradient(180deg,rgba(255,66,66,.05),transparent);
+    padding:14px 15px;margin-bottom:12px;position:relative}
+  .cut::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red)}
+  .cut-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;margin-bottom:8px}
+  .cut-h .nm{font-family:var(--disp);font-weight:700;font-size:18px;color:#ffe3e3;letter-spacing:.03em}
+  .cut-h .axfail{font-size:9px;letter-spacing:.12em;color:var(--red);border:1px solid rgba(255,66,66,.4);
+    padding:2px 8px;text-transform:uppercase}
+  .cut .line{display:grid;grid-template-columns:84px 1fr;gap:8px;font-size:11.5px;padding:5px 0;
+    border-top:1px dashed rgba(255,66,66,.18)}
+  .cut .line:first-of-type{border-top:none}
+  .cut .line .lab{font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+  .cut .line.charm .lab{color:var(--cyan-dim)}
+  .cut .line.charm .val{color:var(--txt)}
+  .cut .line.flaw .lab{color:var(--red)}
+  .cut .line.flaw .val{color:#ffd9d9}
+  .cut .line.verdict .lab{color:var(--amber)}
+  .cut .line.verdict .val{color:var(--amber)}
+
+  /* ====== FINAL ====== */
+  .final{border:1px solid var(--line);background:linear-gradient(180deg,rgba(12,19,34,.9),rgba(7,11,20,.5));
+    padding:16px 18px}
+  .final p{font-size:12.5px;line-height:1.7;color:var(--txt);margin-bottom:10px}
+  .final .lim{border:1px dashed var(--amber);background:rgba(255,176,46,.05);padding:11px 13px;
+    font-size:11px;color:var(--amber);letter-spacing:.02em;line-height:1.6}
+
+  /* ====== FOOTER ====== */
+  .ft{margin-top:34px;border-top:1px solid var(--line);padding-top:14px;
+    display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;
+    font-size:10px;letter-spacing:.1em;color:var(--txt-dim)}
+  .ft a{color:var(--cyan);text-decoration:none}
+  .ft .live{color:var(--green)}
+  .blink{animation:bl 1.4s steps(2) infinite}
+  @keyframes bl{50%{opacity:.2}}
+
+  @media(max-width:680px){
+    .axis{grid-template-columns:1fr}
+    .row{grid-template-columns:78px 1fr}
+    .cut .line{grid-template-columns:70px 1fr}
+  }
+  @media(prefers-reduced-motion:reduce){.blink{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html">◄ 構築シートを見る / ROSTER</a>
+    <span class="here">SELECTION LOGIC // REPORT</span>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="hd">
+    <div class="hd-eyebrow">PSYCHO-PASS SCANNER // SELECTION DOCTRINE</div>
+    <h1 class="hd-title">SELECTION <span class="accent">LOGIC</span></h1>
+    <p class="hd-lead">「OPERATION: PSYCHO-UNITE」の6体は、なぜこの6体なのか。何を最後まで悩み、何を、どの基準で落としたのか。
+      <b>結論→根拠→却下理由</b>の順で、選定プロセスを論理で開示する選定レポート。<b>レギュM-B（シーズンM-3 / シングル）</b>基準。</p>
+  </header>
+
+  <!-- SEC 0 : DOCTRINE -->
+  <section class="sec">
+    <div class="sec-h"><span class="idx">00</span><h2>選定の前提（ドクトリン）</h2><span class="rule"></span></div>
+    <div class="doctrine">
+      <div class="big">エスパー統一の構造的弱点は <span>あく・先制技・はがね</span> の3つ。<br>選定の親基準は「最速・最高火力を並べる」ではなく、<span>この3弱点への回答を最大化する</span>こと。</div>
+      <p class="body" style="margin:0">本体の脅威分析で確定した通り、エスパー統一は加重脅威スコア −0.26（B−帯）＝環境に勝ち越せない縛り構築である。
+        だからこの構築は「強い駒の寄せ集め」では破綻する。<b>以下すべての採用・却下判断は、この3弱点への回答という単一の親基準に紐づく。</b>
+        単体性能が高くても、3弱点の穴を埋めない駒は落とす ── これが本レポートを貫く唯一のルールである。</p>
+    </div>
+  </section>
+
+  <!-- SEC 1 : SCREENING -->
+  <section class="sec">
+    <div class="sec-h"><span class="idx">01</span><h2>採用基準（スクリーニング軸）</h2><span class="rule"></span></div>
+    <p class="body">6体は、次の5軸で機械的にスクリーニングした。各軸は親基準（3弱点への回答）の分解である。</p>
+    <div class="axis">
+      <div class="ax"><span class="tag">軸 A</span><h3>あく・はがねへの有効打</h3>
+        <p>一致エスパー技はあくに半減/無効・はがねに半減。一致でないサブ打点（かくとう・じめん・フェアリー等）を持てるか。<b>持たない駒は天敵に何もできず即失格。</b></p></div>
+      <div class="ax"><span class="tag">軸 B</span><h3>先制技への耐性 / 自前の先制</h3>
+        <p>ふいうち・かげうち・しんそく・バレパンで上から縛られる環境。耐久で耐えて引けるか、または撃ち返せる先制を持つか。<b>紙耐久で先制も無い駒は減点。</b></p></div>
+      <div class="ax"><span class="tag">軸 C</span><h3>役割の非重複</h3>
+        <p>起点／受け／中継／アタッカー／メガ枠を分散。6枠しかない統一で機能が被ると対応範囲が痩せる。<b>先行採用と役割が重なる駒は後発が落ちる。</b></p></div>
+      <div class="ax"><span class="tag">軸 D</span><h3>メガ枠としての完成度</h3>
+        <p>メガが環境を支配するM-Bで、1戦1回の枠を誰に使うか。<b>腐らず自己完結する1体に絞る。</b>火力だけ・耐久だけの偏りは枠の無駄。</p></div>
+      <div class="ax"><span class="tag">軸 E</span><h3>環境上位への刺さり</h3>
+        <p>加重脅威スコアを押し上げるのは使用率トップ20への有効打/受け。<b>マイナー対面にしか効かない器用さは評価しない。</b></p></div>
+    </div>
+  </section>
+
+  <!-- SEC 2 : ADOPTED -->
+  <section class="sec">
+    <div class="sec-h"><span class="idx">02</span><h2>採用6体 — 各駒の必然性</h2><span class="rule"></span></div>
+
+    <!-- META -->
+    <article class="pick key">
+      <div class="pick-h"><span class="nm">メガメタグロス</span><span class="rl">BREAKER / メガ枠</span><span class="key-badge">本構築の肝</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">1戦1回のメガ枠（軸D）。腐らず自己完結し、あく・はがねを殴れて、自前の先制も持つ万能の軸。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>軸A・B・D・Eを同時に満たす唯一格。</b>じしんであく・はがね(ドドゲザン/サーフゴー/ブリジュラス)を貫通(A)、バレットパンチで中速を補う自前の先制(B)、耐久150で受けも利く。M-B評価S(E)。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>メガフーディン（当初の第一候補）</b>。素早150・特攻175は魅力だが、<b>HP55/防御65の紙耐久で先制技に撃つ前に消える</b>＝軸Bで失格。当初フーディンで組んだが、この弱点が3弱点の②そのものに直撃するため転換した（→ 詳細はSEC03）。</div></div>
+    </article>
+
+    <!-- ESPEON -->
+    <article class="pick key">
+      <div class="pick-h"><span class="nm">エーフィ</span><span class="rl">DISRUPTOR / 起点・妨害</span><span class="key-badge">天敵の無力化</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">最大の天敵オーロンゲ（あく＋いたずらごころ）の先制妨害を止める手段。受けでは止まらない「先制でんじは/挑発」への解。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>マジックミラーが「反射」という非対称の解(軸A/B/Eへの間接回答)。</b>オーロンゲの先制でんじは・挑発、カバルドンのあくび、設置技をそっくり送り返して無力化。攻撃で殴り合う必要すら無い。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>フーディンのアンコ/かなしばり起点、サーナイト等</b>。これらは「自分が動いて妨害する」型ゆえ、いたずらごころで先に動かれると機能不全。<b>反射＝相手の行動を逆用する解の方が、先手を取られる統一の宿命に強い。</b></div></div>
+    </article>
+
+    <!-- GALLADE -->
+    <article class="pick key">
+      <div class="pick-h"><span class="nm">エルレイド</span><span class="rl">FLEX / あく・はがね回答 2枚目</span><span class="key-badge">天敵への打点</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">メタグロスのじしんだけでは足りない、あく・はがねへの2枚目の確定打点（軸A）。特に物理あく(ドドゲザン)とはがね受けへの強打点。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>エスパー/かくとうの一致格闘でドドゲザン(4倍)・ブリジュラス・ハッサム・アーマーガアを貫通(A)。</b>特防115＋とつげきチョッキでサーフゴー/アシレーヌ等の特殊も受け返す(B)。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>きあいだま等で格闘を撃てる特殊エスパー（フーディン/サーナイト）</b>。だが命中不安定 or 火力不足。<b>一致・等倍以上の確定数で天敵を落とせるのはエルレイドの物理格闘のみ</b>＝軸Aの厳密さで優先。<span class="mono-sm">※しんそくは非習得を確認済み。先制はメタグロス/エーフィが担当。</span></div></div>
+    </article>
+
+    <!-- BRONZONG -->
+    <article class="pick">
+      <div class="pick-h"><span class="nm">ドータクン</span><span class="rl">SETTER / 設置</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">高速積みエース(カイリュー/ギャラドス)を崩す設置と、全体の遅さを補う展開補助（軸B/E）。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>ふゆうで地面無効＋はがね複合で受け範囲が広い。</b>ステルスロックでカイリューのマルチスケイル/襷を崩し、でんじはで先制弱点を間接緩和。はがねでフェアリー・竜・ノーマルを半減。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>ネンドール（設置＋テレポート）</b>。器用だが火力・耐久が中途半端で軸Eの刺さりが薄い。ドータクンの方が単体耐久と受け範囲で上回り、設置を通す生存力が高い。</div></div>
+    </article>
+
+    <!-- CRESSELIA -->
+    <article class="pick">
+      <div class="pick-h"><span class="nm">クレセリア</span><span class="rl">WALL / 受け・詰め</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">物理アタッカー(ガブ/カイリュー/ギャラドス)を受け止める唯一の物理受け（軸B/E）。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>120/120/130の統一随一の物理耐久＋ふゆうで地面無効。</b>つきのひかり自己回復で居座り、でんじは撒きで遅さを補助。先制技は止められないが「耐えて引く」軸Bの本命。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>ランクルス（マジックガード詰め）</b>。完全無効化は強力だが鈍足で高速環境を受け切れず、<b>受け役としてクレセリアと機能が重複(軸C違反)。</b>物理を受ける数値はクレセリアが明確に上(→詳細SEC03)。</div></div>
+    </article>
+
+    <!-- STARMIE -->
+    <article class="pick">
+      <div class="pick-h"><span class="nm">スターミー</span><span class="rl">PIVOT / 中継</span></div>
+      <div class="row"><div class="lab">求めた役割</div><div class="val">高速積み(竜舞ギャラドス/メガライチュウ)を上から縛るスカーフ中継と、はがね/かくとう/ほのおを受ける駒（軸B/E）。</div></div>
+      <div class="row"><div class="lab">なぜ最適</div><div class="val"><b>みず/エスパーで格闘・はがね・ほのお・みずを半減</b>＝ハッサムのバレパンやメガリザY・バシャーモを受けやすい貴重なタイプ。スカーフで実質最速級の制圧(B)。</div></div>
+      <div class="row rival"><div class="lab">対抗馬</div><div class="val"><b>エーフィのスカーフ型</b>。素早は近いが、エーフィはマジックミラー起点に役割を固定。<b>耐性の広さ(格闘/鋼/炎半減)でスターミーが中継として上</b>。役割分散(軸C)のため別個体で採用。<span class="mono-sm">※とんぼ返りは非習得を確認済み。中継はスカーフ＋引きで代替。</span></div></div>
+    </article>
+  </section>
+
+  <!-- SEC 3 : CUT LIST -->
+  <section class="sec">
+    <div class="sec-h"><span class="idx">03</span><h2>落選した有力候補 — CUT LIST</h2><span class="rule"></span></div>
+    <p class="body">最後まで選定で割れた駒のみを扱う（マイナー駒は載せない）。各駒「<span class="em-cyan">魅力</span> → <span class="em-red">致命的な不足</span> → どの軸で落ちたか」の型で統一する。</p>
+
+    <!-- MEGA ALAKAZAM -->
+    <article class="cut">
+      <div class="cut-h"><span class="nm">メガフーディン</span><span class="axfail">軸B で失格</span></div>
+      <div class="line charm"><div class="lab">魅力</div><div class="val">素早さ150・特攻175ともに全ポケ最高クラス。きあいだまであく・はがねを奇襲でき、上から起点も作れる。当初の第一候補だった。</div></div>
+      <div class="line flaw"><div class="lab">致命的不足</div><div class="val">HP55/防御65の紙耐久。<b>ふいうち・かげうち・バレパン・しんそくが飛び交う環境で「撃つ前に消える」</b>。これは3弱点②（先制技に脆い）そのものを構築に内蔵してしまう。</div></div>
+      <div class="line verdict"><div class="lab">判定</div><div class="val">軸B（先制技耐性）で失格。同じメガ枠(軸D)を、耐久150・自前の先制(バレパン)を持つメガメタグロスに譲った。<b>これが本構築最大の判断転換</b>。</div></div>
+    </article>
+
+    <!-- REUNICLUS -->
+    <article class="cut">
+      <div class="cut-h"><span class="nm">ランクルス</span><span class="axfail">軸C で失格</span></div>
+      <div class="line charm"><div class="lab">魅力</div><div class="val">マジックガードで設置・天候・毒・砂・珠反動を完全無効化。めいそう＋じこさいせいで特殊戦を起点に詰める強力な勝ち筋。</div></div>
+      <div class="line flaw"><div class="lab">致命的不足</div><div class="val">素早さが極端に低く、高速環境で積む前に上から殴り倒される。<b>受け・詰め役としてクレセリアと機能が重複</b>し、物理を受ける素の数値（防御/HP）はクレセリアが明確に上。</div></div>
+      <div class="line verdict"><div class="lab">判定</div><div class="val">軸C（役割の非重複）で失格。受け枠は1体で足り、物理受けの質でクレセリアが優先。ランクルスの「無効化」は魅力だが、3弱点の回答には直結しない。</div></div>
+    </article>
+
+    <!-- GARDEVOIR -->
+    <article class="cut">
+      <div class="cut-h"><span class="nm">サーナイト / メガサーナイト</span><span class="axfail">軸D・B で失格</span></div>
+      <div class="line charm"><div class="lab">魅力</div><div class="val">メガはエスパー/フェアリー＝フェアリースキンのハイパーボイス(みがわり貫通)が魅力。フェアリー複合で<b>あくに一致弱点を突け、竜を無効化</b>でき、理屈では3弱点①に刺さる。</div></div>
+      <div class="line flaw"><div class="lab">致命的不足</div><div class="val">M-B評価Dランク。素早さ100は中速で上を取り切れず、HP68/防御65で<b>物理・先制技に脆い(軸B)</b>。そしてメガ枠(軸D)はメタグロスと排他＝1枠を争って完成度で敗北。</div></div>
+      <div class="line verdict"><div class="lab">判定</div><div class="val">軸D（メガ枠の完成度）でメタグロスに敗北、かつ軸B（先制耐性）でも減点。あく打点はエルレイドの一致格闘で代替できるため、メガ枠をここに割く価値が無い。</div></div>
+    </article>
+
+    <!-- METAGROSS BASE -->
+    <article class="cut">
+      <div class="cut-h"><span class="nm">メタグロス（通常型）</span><span class="axfail">軸D の最適化で不採用</span></div>
+      <div class="line charm"><div class="lab">魅力</div><div class="val">非メガでもステルスロック＋だいばくはつ＋バレパンで設置・退場・先制をこなす器用な駒。メガ枠を他へ回せる利点がある。</div></div>
+      <div class="line flaw"><div class="lab">致命的不足</div><div class="val">メガ枠を別駒に回すと、その別駒（フーディン/サーナイト）が軸B/Dで力不足。<b>結局メガを使う先がメタグロス自身が最適</b>という循環に帰着する。</div></div>
+      <div class="line verdict"><div class="lab">判定</div><div class="val">同じ個体ならメガ化が純粋な上位互換（耐久150・素早110・かたいツメ）。設置役は地面無効のドータクンに分離し、<b>メタグロスはメガとして制圧に専念</b>させるのが軸Dの最適解。</div></div>
+    </article>
+
+    <!-- SLOWKING / SLOWBRO -->
+    <article class="cut">
+      <div class="cut-h"><span class="nm">ヤドラン / ヤドキング系</span><span class="axfail">軸E で失格</span></div>
+      <div class="line charm"><div class="lab">魅力</div><div class="val">みず/エスパーで格闘・はがね・ほのおを半減し、高耐久で再生回復＋なまけ/トリル等の補助もこなす受け候補。</div></div>
+      <div class="line flaw"><div class="lab">致命的不足</div><div class="val">使用率下位（ヤドキングで150位帯）＝環境への刺さりが薄く(軸E)、鈍足。<b>同じ「みず/エスパーの耐性」はスターミーが高速で兼ね、物理受けはクレセリアが厚い</b>。役割が両者に挟まれる。</div></div>
+      <div class="line verdict"><div class="lab">判定</div><div class="val">軸E（環境上位への刺さり）と軸C（役割重複）で失格。耐性タイプの恩恵はスターミー、受け数値はクレセリアに分担済みで、入る隙が無い。</div></div>
+    </article>
+  </section>
+
+  <!-- SEC 4 : SUMMARY -->
+  <section class="sec">
+    <div class="sec-h"><span class="idx">04</span><h2>構築の総括</h2><span class="rule"></span></div>
+    <div class="final">
+      <p>6体は、ドクトリン（あく・先制技・はがねへの回答最大化）を機能で分担している。<b>あく・はがねへの打点</b>をメタグロス(じしん)とエルレイド(一致格闘)の2枚で、
+        <b>先制技への対処</b>を「自前の先制(バレパン/でんこうせっか)＋耐えて引く受け(クレセリア)」で、<b>最大の天敵オーロンゲの先制妨害</b>をエーフィの反射で、
+        それぞれ別の解として埋めた。設置(ドータクン)と高速中継(スターミー)が展開と対面操作を支える。
+        「強い駒の寄せ集め」ではなく、<b>3弱点の各々に名指しの回答を割り当てた構造</b>になっている。</p>
+      <div class="lim">⚠ 正直な限界：それでもメガムクホーク(あまのじゃく)・メガライチュウ等、<b>エスパーで弱点を突けない無弱点・高速駒には構造的に不利</b>。
+        加重脅威スコア −0.26 ＝ <b>B−帯（勝ち越せない）</b>である事実は変わらない。本レポートは「縛りの中の最適化」を示すものであり、ティア上位への到達を主張するものではない。</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="ft">
+    <span><a href="index.html">◄ 構築シート (ROSTER) へ戻る</a></span>
+    <span class="live"><span class="blink">●</span> LOGIC TRACE ONLINE</span>
+    <span>REG M-B / シーズンM-3 // 2026-06-21</span>
+  </footer>
+
+</div>
+
+<!--
+============================================================
+ SELECTION LOGIC — 却下駒の裏取り出典（2026-06-21 / レギュM-B シーズンM-3）
+============================================================
+  - メガサーナイト育成論・M-B評価Dランク（gamewith / game8）: https://gamewith.jp/pokemon-champions/554818 ・ https://game8.jp/pokemon-champions/776730
+  - メガサーナイト種族値(68-85-65-165-135-100)・フェアリースキン（game8）: https://game8.jp/pokemon-champions/777890
+  - サーナイト育成論（gamewith）: https://gamewith.jp/pokemon-champions/557324
+  - ランクルス（マジックガード）/ エスパー一覧（game8）: https://game8.jp/pokemon-champions/776005
+  - ヤドキング等エスパー使用率（pokedb シングルM-3）: https://champs.pokedb.tokyo/pokemon/list?season=3&rule=0
+  - メガフーディン育成論・紙耐久（gamewith）: https://gamewith.jp/pokemon-champions/555274
+
+ ■ 確定事項（調査で確認済み）
+  - エルレイド「しんそく」非習得 / スターミー「とんぼがえり」非習得。
+  - メガサーナイトはM-B Dランク・素早100・物理耐久薄（68/65）。
+ ■ 未検証（実機での最終調整が必要）
+  - 各却下駒の細かなダメージ計算・調整は未検証。判定は採用基準(軸A〜E)に基づく構築者判断。
+============================================================
+-->
+</body>
+</html>
